@@ -11,71 +11,14 @@
       display: flex;
       flex-direction: column;
       background: #f9f9f9;
-      overflow: hidden;
     }
 
     h2 {
-      margin: 6px 0;
+      margin: 4px;
+      text-align: center;
       font-size: 16px;
       font-weight: 500;
       color: #222;
-    }
-
-    #app-title {
-      position: fixed;
-      top: 4px;
-      left: 12px;
-      right: 160px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 0.4em;
-      font-size: 16px;
-      font-weight: 600;
-      color: #222;
-      margin: 0;
-      text-align: left;
-      box-sizing: border-box;
-      min-height: 30px;
-      z-index: 1200;
-      pointer-events: none;
-    }
-
-    .top-ui {
-      transition: transform 220ms ease, opacity 220ms ease;
-      will-change: transform, opacity;
-    }
-
-    .top-ui.hidden {
-      transform: translateY(-120%);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-
-    #top-strip {
-      position: fixed;
-      top: 0px;
-      left: 10px;
-      right: 10px;
-      height: 34px;
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(4px);
-      border: none;
-      border-radius: 10px;
-      z-index: 1100;
-      transition: transform 220ms ease, opacity 220ms ease;
-      pointer-events: none;
-      box-sizing: border-box;
-    }
-
-    body.dark #top-strip {
-      background: rgba(24,28,35,0.55);
-    }
-
-    #top-strip.hidden {
-      transform: translateY(-120%);
-      opacity: 0;
     }
 
     body.dark {
@@ -87,14 +30,10 @@
       color: #e9eef5;
     }
 
-    body.dark #app-title {
-      color: #e9eef5;
-    }
-
     #messages {
       flex: 1;
       list-style: none;
-      margin: 36px 10px 0 10px;
+      margin: 0 10px;
       padding: 10px;
       overflow-y: auto;
       border: 1px solid #ddd;
@@ -155,7 +94,7 @@
     }
 
     .message-image {
-      margin-top: 0px;
+      margin-top: 6px;
       max-width: min(380px, 70vw);
       max-height: 320px;
       border-radius: 6px;
@@ -194,8 +133,8 @@
     }
 
     #input-area button {
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       padding: 0;
       font-size: 14px;
       background-color: #007bff;
@@ -239,22 +178,20 @@
 
     #top-controls {
       position: fixed;
-      top: 8px;
-      right: 18px;
+      top: 10px;
+      right: 12px;
       display: flex;
-      align-items: center;
       gap: 8px;
-      padding: 0;
-      min-height: 30px;
+      padding: 6px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(4px);
       z-index: 1200;
-      box-sizing: border-box;
-      background: transparent;
-      backdrop-filter: none;
     }
 
     #top-controls button {
-      width: 30px;
-      height: 30px;
+      width: 38px;
+      height: 38px;
       border-radius: 8px;
       background: rgba(255,255,255,0.9);
       color: #1f2d3d;
@@ -267,6 +204,10 @@
 
     #top-controls button:hover {
       background: #e9eef5;
+    }
+
+    body.dark #top-controls {
+      background: rgba(24,28,35,0.7);
     }
 
     body.dark #top-controls button {
@@ -282,6 +223,17 @@
     #toggle-theme .icon-sun { display: none; }
     body.dark #toggle-theme .icon-sun { display: inline; }
     body.dark #toggle-theme .icon-moon { display: none; }
+
+    .hint {
+      width: 100%;
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    body.dark .hint {
+      color: #b8c0cc;
+    }
 
     #image-preview-wrap {
       width: 100%;
@@ -326,13 +278,12 @@
   </style>
 </head>
 <body>
-  <div id="top-strip" class="top-ui"></div>
-  <h2 id="app-title" class="top-ui">
+  <h2 style="display: flex; align-items: center; justify-content: center; gap: 0.4em; font-size: 20px; font-weight: 600; color: #222; margin: 6px 4px;">
     <img src="/favicon.ico" alt="Embryo Logo" style="height: 1.25em; display: inline-block;">
     Embryo - School-Friendly Messaging App
   </h2>
 
-  <div id="top-controls" class="top-ui" aria-label="Top controls">
+  <div id="top-controls" aria-label="Top controls">
     <button id="change-avatar" title="Set avatar" aria-label="Set avatar">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21C4 16.6 7.6 13 12 13C16.4 13 20 16.6 20 21"></path></svg>
       <span class="sr-only">Set avatar</span>
@@ -391,9 +342,6 @@
     const imagePreviewWrap = document.getElementById("image-preview-wrap");
     const imagePreview = document.getElementById("image-preview");
     const clearImageButton = document.getElementById("clear-image");
-    const appTitle = document.getElementById("app-title");
-    const topControls = document.getElementById("top-controls");
-    const topStrip = document.getElementById("top-strip");
 
     const MAX_IMAGE_BYTES = 1024 * 1024; // 1MB
 
@@ -403,31 +351,6 @@
     let pendingImage = "";
 
     localStorage.setItem("username", username);
-
-    let topUiHideTimer = null;
-
-    function setTopUIVisible(visible) {
-      appTitle.classList.toggle("hidden", !visible);
-      topControls.classList.toggle("hidden", !visible);
-      topStrip.classList.toggle("hidden", !visible);
-    }
-
-    function scheduleTopUIHide() {
-      clearTimeout(topUiHideTimer);
-      topUiHideTimer = setTimeout(() => setTopUIVisible(false), 500);
-    }
-
-    function wakeTopUI() {
-      setTopUIVisible(true);
-      scheduleTopUIHide();
-    }
-
-    document.addEventListener("mousemove", (e) => {
-      if (e.clientY <= 72) wakeTopUI();
-    });
-
-    window.addEventListener("scroll", () => wakeTopUI(), { passive: true });
-
 
     const savedTheme = localStorage.getItem("theme") || "dark";
     if (savedTheme === "dark") document.body.classList.add("dark");
@@ -570,7 +493,6 @@
       setTheme(isDark ? "light" : "dark");
     };
     setTheme(document.body.classList.contains("dark") ? "dark" : "light");
-    scheduleTopUIHide();
 
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
