@@ -212,7 +212,8 @@
     const MAX_IMAGE_BYTES = 1024 * 1024; // 1MB
 
     let username = (localStorage.getItem("username") || prompt("Enter your username:") || "Anonymous").trim();
-    let avatar = localStorage.getItem("avatar") || "";
+    const avatarKey = (name) => `avatar:${name}`;
+    let avatar = localStorage.getItem(avatarKey(username)) || "";
     let pendingImage = "";
 
     localStorage.setItem("username", username);
@@ -381,8 +382,9 @@
     avatarFileInput.onchange = () => {
       const file = avatarFileInput.files?.[0];
       readFileAsDataUrl(file, (dataUrl) => {
+        localStorage.removeItem(avatarKey(username));
         avatar = dataUrl;
-        localStorage.setItem("avatar", avatar);
+        localStorage.setItem(avatarKey(username), avatar);
         socket.emit("set avatar", { username, avatar });
         alert("Avatar updated.");
       });
@@ -392,9 +394,16 @@
     usernameButton.onclick = () => {
       const newUsername = (prompt("Enter new username:") || "").trim();
       if (newUsername) {
+        const oldUsername = username;
         username = newUsername;
         localStorage.setItem("username", username);
+
+        // switch avatar storage namespace by username
+        localStorage.removeItem(avatarKey(oldUsername));
+        avatar = localStorage.getItem(avatarKey(username)) || "";
+
         if (avatar) socket.emit("set avatar", { username, avatar });
+        else socket.emit("set avatar", { username, avatar: "" });
       }
     };
   </script>

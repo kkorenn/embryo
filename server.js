@@ -3,6 +3,7 @@ const http = require("http");
 const socketIO = require("socket.io");
 const path = require("path");
 const readline = require("readline");
+const fs = require("fs");
 
 const app = express();
 const server = http.createServer(app);
@@ -18,8 +19,18 @@ const MAX_TEXT = 2000;
 const MAX_IMAGE_DATA_URL = 1_400_000; // rough cap (~1MB binary)
 const RATE_WINDOW_MS = 4000;
 const RATE_LIMIT_COUNT = 10;
+const AVATAR_DB_PATH = path.join(__dirname, "avatars.json");
 
 let messageHistory = [];
+let avatarByUser = {};
+
+if (fs.existsSync(AVATAR_DB_PATH)) {
+  try {
+    avatarByUser = JSON.parse(fs.readFileSync(AVATAR_DB_PATH, "utf8"));
+  } catch {
+    avatarByUser = {};
+  }
+}
 
 function getCurrentTimestamp() {
   return new Date().toISOString();
@@ -38,9 +49,14 @@ function isAllowedDataUrl(dataUrl) {
   return true;
 }
 
+function saveAvatars() {
+  fs.writeFileSync(AVATAR_DB_PATH, JSON.stringify(avatarByUser, null, 2), "utf8");
+}
+
 function normalizeAvatar(avatar, username) {
   if (isAllowedDataUrl(avatar)) return avatar;
-  return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(username)}`;
+  if (isAllowedDataUrl(avatarByUser[username])) return avatarByUser[username];
+  return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(username)}&size=64`;
 }
 
 function pushHistory(msg) {
@@ -60,8 +76,19 @@ io.on("connection", (socket) => {
 
   socket.on("set avatar", ({ username, avatar }) => {
     const safeUsername = clampString(username, MAX_USERNAME);
-    if (!safeUsername || !isAllowedDataUrl(avatar)) return;
+    if (!safeUsername) return;
+
+    if (!avatar) {
+      delete avatarByUser[safeUsername];
+      socket.data.avatar = null;
+      saveAvatars();
+      return;
+    }
+
+    if (!isAllowedDataUrl(avatar)) return;
     socket.data.avatar = avatar;
+    avatarByUser[safeUsername] = avatar;
+    saveAvatars();
   });
 
   socket.on("chat message", (payload = {}) => {
@@ -78,7 +105,13 @@ io.on("connection", (socket) => {
     const username = clampString(payload.username, MAX_USERNAME) || "Anonymous";
     const text = clampString(payload.text, MAX_TEXT);
     const image = isAllowedDataUrl(payload.image) ? payload.image : null;
-    const avatar = normalizeAvatar(payload.avatar || socket.data.avatar, username);
+    const incomingAvatar = isAllowedDataUrl(payload.avatar) ? payload.avatar : socket.data.avatar;
+    if (isAllowedDataUrl(incomingAvatar)) {
+      avatarByUser[username] = incomingAvatar;
+      saveAvatars();
+    }
+
+    const avatar = normalizeAvatar(incomingAvatar, username);
 
     if (!text && !image) return;
 
