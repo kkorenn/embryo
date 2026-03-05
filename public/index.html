@@ -14,11 +14,24 @@
     }
 
     h2 {
-      margin: 4px;
-      text-align: center;
+      margin: 6px 0;
       font-size: 16px;
       font-weight: 500;
       color: #222;
+    }
+
+    #app-title {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.4em;
+      font-size: 20px;
+      font-weight: 600;
+      color: #222;
+      padding: 0 180px 0 12px;
+      text-align: left;
+      box-sizing: border-box;
+      min-height: 40px;
     }
 
     body.dark {
@@ -181,17 +194,20 @@
       top: 4px;
       right: 8px;
       display: flex;
+      align-items: center;
       gap: 8px;
-      padding: 6px;
+      padding: 8px;
+      min-height: 54px;
       border-radius: 12px;
-      background: rgba(255,255,255,0.65);
+      background: rgba(255,255,255,0.75);
       backdrop-filter: blur(4px);
       z-index: 1200;
+      box-sizing: border-box;
     }
 
     #top-controls button {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       border-radius: 8px;
       background: rgba(255,255,255,0.9);
       color: #1f2d3d;
@@ -267,7 +283,7 @@
   </style>
 </head>
 <body>
-  <h2 style="display: flex; align-items: center; justify-content: center; gap: 0.4em; font-size: 20px; font-weight: 600; color: #222; margin: 6px 4px;">
+  <h2 id="app-title">
     <img src="/favicon.ico" alt="Embryo Logo" style="height: 1.25em; display: inline-block;">
     Embryo - School-Friendly Messaging App
   </h2>
