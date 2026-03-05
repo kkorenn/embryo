@@ -103,18 +103,37 @@
     }
 
     #input-area button {
-      padding: 10px 14px;
+      padding: 10px 12px;
       font-size: 14px;
       background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1;
     }
 
     #input-area button:hover {
       background-color: #0056b3;
+    }
+
+    #input-area button svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    #input-area button .label {
+      white-space: nowrap;
     }
 
     .hint {
@@ -177,10 +196,22 @@
 
   <div id="input-area">
     <input id="input" type="text" autocomplete="off" placeholder="Type a message..." />
-    <button id="send">Send</button>
-    <button id="attach-image">Attach Image</button>
-    <button id="change-avatar">Set Avatar</button>
-    <button id="change-username">Change Username</button>
+    <button id="send" title="Send message">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+      <span class="label">Send</span>
+    </button>
+    <button id="attach-image" title="Attach image">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="1.5"></circle><path d="M21 15L16 10L5 21"></path></svg>
+      <span class="label">Attach</span>
+    </button>
+    <button id="change-avatar" title="Set avatar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21C4 16.6 7.6 13 12 13C16.4 13 20 16.6 20 21"></path></svg>
+      <span class="label">Avatar</span>
+    </button>
+    <button id="change-username" title="Change username">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20H21"></path><path d="M16.5 3.5A2.1 2.1 0 0 1 19.5 6.5L7 19L3 20L4 16L16.5 3.5Z"></path></svg>
+      <span class="label">Username</span>
+    </button>
 
     <input id="image-file" type="file" accept="image/*" style="display:none;" />
     <input id="avatar-file" type="file" accept="image/*" style="display:none;" />
@@ -188,7 +219,10 @@
     <div id="image-preview-wrap">
       <span>Attached:</span>
       <img id="image-preview" alt="preview" />
-      <button id="clear-image" type="button">Remove</button>
+      <button id="clear-image" type="button" title="Remove attached image">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6H21"></path><path d="M8 6V4H16V6"></path><path d="M19 6L18 20H6L5 6"></path><path d="M10 11V17"></path><path d="M14 11V17"></path></svg>
+        <span class="label">Remove</span>
+      </button>
     </div>
 
     <div class="hint">Tip: You can paste images directly (Ctrl/Cmd + V).</div>
