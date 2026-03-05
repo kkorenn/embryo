@@ -23,14 +23,14 @@
 
     #app-title {
       position: fixed;
-      top: 14px;
-      left: 18px;
-      right: 180px;
+      top: 10px;
+      left: 14px;
+      right: 160px;
       display: flex;
       align-items: center;
       justify-content: flex-start;
       gap: 0.4em;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
       color: #222;
       margin: 0;
@@ -55,14 +55,14 @@
 
     #top-strip {
       position: fixed;
-      top: 8px;
+      top: 6px;
       left: 10px;
       right: 10px;
-      height: 52px;
-      background: rgba(255,255,255,0.78);
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(210,217,226,0.7);
-      border-radius: 12px;
+      height: 42px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(4px);
+      border: none;
+      border-radius: 10px;
       z-index: 1100;
       transition: transform 220ms ease, opacity 220ms ease;
       pointer-events: none;
@@ -70,8 +70,7 @@
     }
 
     body.dark #top-strip {
-      background: rgba(24,28,35,0.78);
-      border-bottom-color: rgba(90,99,112,0.7);
+      background: rgba(24,28,35,0.55);
     }
 
     #top-strip.hidden {
@@ -95,7 +94,7 @@
     #messages {
       flex: 1;
       list-style: none;
-      margin: 66px 10px 0 10px;
+      margin: 54px 10px 0 10px;
       padding: 10px;
       overflow-y: auto;
       border: 1px solid #ddd;
@@ -195,8 +194,8 @@
     }
 
     #input-area button {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       padding: 0;
       font-size: 14px;
       background-color: #007bff;
@@ -240,13 +239,13 @@
 
     #top-controls {
       position: fixed;
-      top: 14px;
+      top: 10px;
       right: 18px;
       display: flex;
       align-items: center;
       gap: 8px;
       padding: 0;
-      min-height: 44px;
+      min-height: 40px;
       z-index: 1200;
       box-sizing: border-box;
       background: transparent;
@@ -254,8 +253,8 @@
     }
 
     #top-controls button {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border-radius: 8px;
       background: rgba(255,255,255,0.9);
       color: #1f2d3d;
