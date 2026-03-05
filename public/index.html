@@ -21,6 +21,10 @@
     }
 
     #app-title {
+      position: fixed;
+      top: 8px;
+      left: 10px;
+      right: 170px;
       display: flex;
       align-items: center;
       justify-content: flex-start;
@@ -28,10 +32,12 @@
       font-size: 20px;
       font-weight: 600;
       color: #222;
-      padding: 0 180px 0 12px;
+      margin: 0;
       text-align: left;
       box-sizing: border-box;
       min-height: 40px;
+      z-index: 1200;
+      pointer-events: none;
     }
 
     .top-ui {
@@ -378,7 +384,7 @@
 
     function scheduleTopUIHide() {
       clearTimeout(topUiHideTimer);
-      topUiHideTimer = setTimeout(() => setTopUIVisible(false), 1400);
+      topUiHideTimer = setTimeout(() => setTopUIVisible(false), 500);
     }
 
     function wakeTopUI() {
@@ -387,7 +393,7 @@
     }
 
     document.addEventListener("mousemove", (e) => {
-      if (e.clientY <= 96) wakeTopUI();
+      if (e.clientY <= 72) wakeTopUI();
     });
 
     window.addEventListener("scroll", () => wakeTopUI(), { passive: true });
