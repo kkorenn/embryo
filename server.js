@@ -6,31 +6,93 @@ const readline = require("readline");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+const io = socketIO(server, {
+  maxHttpBufferSize: 2 * 1024 * 1024 // 2MB payload cap
+});
 
 app.use(express.static(path.join(__dirname, "public")));
 
-let messageHistory = []; // store messages in memory
+const MAX_HISTORY = 500;
+const MAX_USERNAME = 32;
+const MAX_TEXT = 2000;
+const MAX_IMAGE_DATA_URL = 1_400_000; // rough cap (~1MB binary)
+const RATE_WINDOW_MS = 4000;
+const RATE_LIMIT_COUNT = 10;
 
-// Helper to get current time as ISO string
+let messageHistory = [];
+
 function getCurrentTimestamp() {
   return new Date().toISOString();
 }
 
+function clampString(value, max) {
+  if (typeof value !== "string") return "";
+  return value.trim().slice(0, max);
+}
+
+function isAllowedDataUrl(dataUrl) {
+  if (typeof dataUrl !== "string") return false;
+  if (!dataUrl.startsWith("data:image/")) return false;
+  if (!dataUrl.includes(";base64,")) return false;
+  if (dataUrl.length > MAX_IMAGE_DATA_URL) return false;
+  return true;
+}
+
+function normalizeAvatar(avatar, username) {
+  if (isAllowedDataUrl(avatar)) return avatar;
+  return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(username)}`;
+}
+
+function pushHistory(msg) {
+  messageHistory.push(msg);
+  if (messageHistory.length > MAX_HISTORY) {
+    messageHistory = messageHistory.slice(messageHistory.length - MAX_HISTORY);
+  }
+}
+
 io.on("connection", (socket) => {
+  socket.data.messageTimestamps = [];
+  socket.data.avatar = null;
+
   socket.on("get history", () => {
     socket.emit("message history", messageHistory);
   });
 
-  socket.on("chat message", ({ username, text }) => {
-    const timestamp = getCurrentTimestamp();
+  socket.on("set avatar", ({ username, avatar }) => {
+    const safeUsername = clampString(username, MAX_USERNAME);
+    if (!safeUsername || !isAllowedDataUrl(avatar)) return;
+    socket.data.avatar = avatar;
+  });
+
+  socket.on("chat message", (payload = {}) => {
+    const now = Date.now();
+    socket.data.messageTimestamps = socket.data.messageTimestamps.filter(
+      (ts) => now - ts < RATE_WINDOW_MS
+    );
+
+    if (socket.data.messageTimestamps.length >= RATE_LIMIT_COUNT) {
+      socket.emit("announcement", "메시지를 너무 빠르게 보내고 있어요. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+
+    const username = clampString(payload.username, MAX_USERNAME) || "Anonymous";
+    const text = clampString(payload.text, MAX_TEXT);
+    const image = isAllowedDataUrl(payload.image) ? payload.image : null;
+    const avatar = normalizeAvatar(payload.avatar || socket.data.avatar, username);
+
+    if (!text && !image) return;
+
+    socket.data.messageTimestamps.push(now);
+
     const msg = {
       username,
       text,
-      timestamp,
-      avatar: `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(username)}`
+      image,
+      timestamp: getCurrentTimestamp(),
+      avatar
     };
-    messageHistory.push(msg);
+
+    pushHistory(msg);
     io.emit("chat message", msg);
   });
 });
@@ -67,20 +129,22 @@ Commands:
 
     case "list":
       messageHistory.forEach((msg, i) => {
-        console.log(`[${i}] [${msg.timestamp}] ${msg.username}: ${msg.text}`);
+        const imageText = msg.image ? " [image]" : "";
+        console.log(`[${i}] [${msg.timestamp}] ${msg.username}: ${msg.text || ""}${imageText}`);
       });
       break;
 
-    case "delete":
-      const index = parseInt(args[1]);
-      if (isNaN(index) || index < 0 || index >= messageHistory.length) {
+    case "delete": {
+      const index = Number.parseInt(args[1], 10);
+      if (Number.isNaN(index) || index < 0 || index >= messageHistory.length) {
         console.log("Invalid message index.");
       } else {
         const removed = messageHistory.splice(index, 1)[0];
-        console.log(`Deleted: [${removed.timestamp}] ${removed.username}: ${removed.text}`);
+        console.log(`Deleted: [${removed.timestamp}] ${removed.username}: ${removed.text || "[image]"}`);
         io.emit("message history", messageHistory);
       }
       break;
+    }
 
     case "clear":
       messageHistory = [];
