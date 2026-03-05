@@ -21,6 +21,15 @@
       color: #222;
     }
 
+    body.dark {
+      background: #2b2f36;
+      color: #e9eef5;
+    }
+
+    body.dark h2 {
+      color: #e9eef5;
+    }
+
     #messages {
       flex: 1;
       list-style: none;
@@ -30,6 +39,11 @@
       border: 1px solid #ddd;
       background: #fff;
       border-radius: 4px;
+    }
+
+    body.dark #messages {
+      border-color: #4a515d;
+      background: #232831;
     }
 
     #messages li {
@@ -43,6 +57,11 @@
       word-wrap: break-word;
       font-size: 14px;
       gap: 8px;
+    }
+
+    body.dark #messages li {
+      background: #37404d;
+      color: #edf2f8;
     }
 
     .avatar {
@@ -92,6 +111,11 @@
       gap: 8px;
     }
 
+    body.dark #input-area {
+      background: #232831;
+      border-top-color: #4a515d;
+    }
+
     #input-area input[type="text"] {
       flex: 1;
       min-width: 220px;
@@ -100,6 +124,12 @@
       border: 1px solid #ccc;
       border-radius: 4px;
       outline: none;
+    }
+
+    body.dark #input-area input[type="text"] {
+      background: #313845;
+      color: #edf2f8;
+      border-color: #555d6a;
     }
 
     #input-area button {
@@ -151,6 +181,10 @@
       font-size: 12px;
       color: #666;
       margin-top: 2px;
+    }
+
+    body.dark .hint {
+      color: #b8c0cc;
     }
 
     #image-preview-wrap {
@@ -222,6 +256,10 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20H21"></path><path d="M16.5 3.5A2.1 2.1 0 0 1 19.5 6.5L7 19L3 20L4 16L16.5 3.5Z"></path></svg>
       <span class="sr-only">Change username</span>
     </button>
+    <button id="toggle-theme" title="Toggle dark mode" aria-label="Toggle dark mode">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3A7 7 0 0 0 21 12.8Z"></path></svg>
+      <span class="sr-only">Toggle dark mode</span>
+    </button>
 
     <input id="image-file" type="file" accept="image/*" style="display:none;" />
     <input id="avatar-file" type="file" accept="image/*" style="display:none;" />
@@ -249,6 +287,7 @@
     const imageFileInput = document.getElementById("image-file");
     const avatarFileInput = document.getElementById("avatar-file");
     const changeAvatarButton = document.getElementById("change-avatar");
+    const themeToggleButton = document.getElementById("toggle-theme");
     const imagePreviewWrap = document.getElementById("image-preview-wrap");
     const imagePreview = document.getElementById("image-preview");
     const clearImageButton = document.getElementById("clear-image");
@@ -261,6 +300,17 @@
     let pendingImage = "";
 
     localStorage.setItem("username", username);
+
+    const savedTheme = localStorage.getItem("theme") || "light";
+    if (savedTheme === "dark") document.body.classList.add("dark");
+
+    function setTheme(mode) {
+      if (mode === "dark") document.body.classList.add("dark");
+      else document.body.classList.remove("dark");
+      localStorage.setItem("theme", mode);
+      themeToggleButton.title = mode === "dark" ? "Switch to light mode" : "Switch to dark mode";
+      themeToggleButton.setAttribute("aria-label", themeToggleButton.title);
+    }
 
     function stringToColor(str) {
       let hash = 0;
@@ -386,6 +436,12 @@
     }
 
     sendButton.onclick = sendMessage;
+
+    themeToggleButton.onclick = () => {
+      const isDark = document.body.classList.contains("dark");
+      setTheme(isDark ? "light" : "dark");
+    };
+    setTheme(document.body.classList.contains("dark") ? "dark" : "light");
 
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
