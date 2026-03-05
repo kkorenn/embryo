@@ -34,12 +34,27 @@
       min-height: 40px;
     }
 
+    .top-ui {
+      transition: transform 220ms ease, opacity 220ms ease;
+      will-change: transform, opacity;
+    }
+
+    .top-ui.hidden {
+      transform: translateY(-120%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
     body.dark {
       background: #2b2f36;
       color: #e9eef5;
     }
 
     body.dark h2 {
+      color: #e9eef5;
+    }
+
+    body.dark #app-title {
       color: #e9eef5;
     }
 
@@ -191,18 +206,17 @@
 
     #top-controls {
       position: fixed;
-      top: 4px;
-      right: 8px;
+      top: 8px;
+      right: 10px;
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px;
-      min-height: 54px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.75);
-      backdrop-filter: blur(4px);
+      padding: 0;
+      min-height: 44px;
       z-index: 1200;
       box-sizing: border-box;
+      background: transparent;
+      backdrop-filter: none;
     }
 
     #top-controls button {
@@ -220,10 +234,6 @@
 
     #top-controls button:hover {
       background: #e9eef5;
-    }
-
-    body.dark #top-controls {
-      background: rgba(24,28,35,0.7);
     }
 
     body.dark #top-controls button {
@@ -283,12 +293,12 @@
   </style>
 </head>
 <body>
-  <h2 id="app-title">
+  <h2 id="app-title" class="top-ui">
     <img src="/favicon.ico" alt="Embryo Logo" style="height: 1.25em; display: inline-block;">
     Embryo - School-Friendly Messaging App
   </h2>
 
-  <div id="top-controls" aria-label="Top controls">
+  <div id="top-controls" class="top-ui" aria-label="Top controls">
     <button id="change-avatar" title="Set avatar" aria-label="Set avatar">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21C4 16.6 7.6 13 12 13C16.4 13 20 16.6 20 21"></path></svg>
       <span class="sr-only">Set avatar</span>
@@ -347,6 +357,8 @@
     const imagePreviewWrap = document.getElementById("image-preview-wrap");
     const imagePreview = document.getElementById("image-preview");
     const clearImageButton = document.getElementById("clear-image");
+    const appTitle = document.getElementById("app-title");
+    const topControls = document.getElementById("top-controls");
 
     const MAX_IMAGE_BYTES = 1024 * 1024; // 1MB
 
@@ -356,6 +368,30 @@
     let pendingImage = "";
 
     localStorage.setItem("username", username);
+
+    let topUiHideTimer = null;
+
+    function setTopUIVisible(visible) {
+      appTitle.classList.toggle("hidden", !visible);
+      topControls.classList.toggle("hidden", !visible);
+    }
+
+    function scheduleTopUIHide() {
+      clearTimeout(topUiHideTimer);
+      topUiHideTimer = setTimeout(() => setTopUIVisible(false), 1400);
+    }
+
+    function wakeTopUI() {
+      setTopUIVisible(true);
+      scheduleTopUIHide();
+    }
+
+    document.addEventListener("mousemove", (e) => {
+      if (e.clientY <= 96) wakeTopUI();
+    });
+
+    window.addEventListener("scroll", () => wakeTopUI(), { passive: true });
+
 
     const savedTheme = localStorage.getItem("theme") || "dark";
     if (savedTheme === "dark") document.body.classList.add("dark");
@@ -498,6 +534,7 @@
       setTheme(isDark ? "light" : "dark");
     };
     setTheme(document.body.classList.contains("dark") ? "dark" : "light");
+    scheduleTopUIHide();
 
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
