@@ -7,6 +7,7 @@
     html, body {
       height: 100%;
       margin: 0;
+      padding-top: 4px;
       font-family: "Comic Sans MS", cursive, sans-serif;
       display: flex;
       flex-direction: column;
@@ -49,6 +50,31 @@
       transform: translateY(-120%);
       opacity: 0;
       pointer-events: none;
+    }
+
+
+    #top-strip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 58px;
+      background: rgba(255,255,255,0.78);
+      backdrop-filter: blur(5px);
+      border-bottom: 1px solid rgba(210,217,226,0.7);
+      z-index: 1100;
+      transition: transform 220ms ease, opacity 220ms ease;
+      pointer-events: none;
+    }
+
+    body.dark #top-strip {
+      background: rgba(24,28,35,0.78);
+      border-bottom-color: rgba(90,99,112,0.7);
+    }
+
+    #top-strip.hidden {
+      transform: translateY(-120%);
+      opacity: 0;
     }
 
     body.dark {
@@ -299,6 +325,7 @@
   </style>
 </head>
 <body>
+  <div id="top-strip" class="top-ui"></div>
   <h2 id="app-title" class="top-ui">
     <img src="/favicon.ico" alt="Embryo Logo" style="height: 1.25em; display: inline-block;">
     Embryo - School-Friendly Messaging App
@@ -365,6 +392,7 @@
     const clearImageButton = document.getElementById("clear-image");
     const appTitle = document.getElementById("app-title");
     const topControls = document.getElementById("top-controls");
+    const topStrip = document.getElementById("top-strip");
 
     const MAX_IMAGE_BYTES = 1024 * 1024; // 1MB
 
@@ -380,6 +408,7 @@
     function setTopUIVisible(visible) {
       appTitle.classList.toggle("hidden", !visible);
       topControls.classList.toggle("hidden", !visible);
+      topStrip.classList.toggle("hidden", !visible);
     }
 
     function scheduleTopUIHide() {
